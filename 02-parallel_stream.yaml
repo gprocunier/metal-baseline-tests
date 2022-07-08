@@ -1,0 +1,15 @@
+---
+- name: parallel stream test harness
+  hosts: senders[0]
+  gather_facts: no
+  tasks:
+    - ping:
+    - set_fact:
+        iperf_logfile: "/tmp/iperf_{{ lookup('password', '/dev/null chars=ascii_lowercase,digits length=12') }}.log"
+    - name: start parallel stream iperf3 test
+      shell: iperf3 -V -c "{{ groups['receivers'][0] }}" -P "{{ parallel_streams }}" --logfile "{{ iperf_logfile }}"
+    - name: fetch log data
+      fetch:
+        src: "{{ iperf_logfile }}"
+        dest: "{{ playbook_dir }}"
+      

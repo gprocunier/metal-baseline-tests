@@ -1,0 +1,67 @@
+---
+- name: benchmark test harness
+  hosts: all
+  tasks:
+    - ping:
+    - yum:
+        name:
+          - iperf3
+          - fio
+          - pcp
+          - pcp-selinux
+          - pcp-system-tools
+          - sysstat
+    - copy:
+        content: "{{ data }}"
+        mode: 0644
+        owner: root
+        group: root
+        dest: /etc/systemd/system/fio.service
+      vars:
+        data: |
+          [Unit]
+          Description=Start fio as a server in listen mode
+          After=syslog.target systemd-user-sessions.service
+
+          [Service]
+          ExecStart=/usr/bin/fio --server
+          KillMode=process
+
+          [Install]
+          WantedBy=multi-user.target
+    - copy:
+        content: "{{ data }}"
+        mode: 0644
+        owner: root
+        group: root
+        dest: /etc/systemd/system/iperf3.service
+      vars:
+        data: |
+          [Unit]
+          Description=Start iperf3 as a server in listen mode
+          After=syslog.target systemd-user-sessions.service
+
+          [Service]
+          ExecStart=/usr/bin/iperf3 -s
+          KillMode=process
+
+          [Install]
+          WantedBy=multi-user.target
+    - shell: restorecon -Rv /etc/systemd/system
+    - shell: systemctl daemon-reload
+    - service:
+        name: fio
+        enabled: yes
+        state: started
+    - service:
+        name: iperf3
+        enabled: yes
+        state: started
+    - service:
+        name: pmcd
+        state: started
+    - service:
+        name: pmlogger
+        state: started
+ 
+

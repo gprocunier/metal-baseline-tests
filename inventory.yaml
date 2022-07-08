@@ -1,0 +1,14 @@
+all:
+  hosts:
+    192.168.122.205:
+    192.168.122.180:
+
+senders:
+  hosts:
+    192.168.122.205:
+  vars:
+    parallel_streams: 8
+
+receivers:
+  hosts:
+    192.168.122.180:
